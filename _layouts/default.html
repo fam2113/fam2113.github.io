@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}The artist portfolio of Lee, Hyunbae.{% endif %}">
+  <title>{% if page.title %}{{ page.title }} — Lee, Hyunbae{% else %}Lee, Hyunbae{% endif %}</title>
+  <link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+  {% if page.stylesheets %}
+    {% for stylesheet in page.stylesheets %}
+  <link rel="stylesheet" href="{{ stylesheet | relative_url }}">
+    {% endfor %}
+  {% endif %}
+</head>
+<body>
+  <div class="site-shell">
+    <div class="site-masthead">
+      {% include header.html %}
+      {% if page.url contains '/works/' %}
+        {% include period_nav.html %}
+      {% elsif page.exhibition_year %}
+        {% include exhibition_period_nav.html %}
+      {% elsif page.note_year %}
+        {% include note_period_nav.html %}
+      {% endif %}
+    </div>
+    <main>
+      {{ content }}
+    </main>
+    {% include footer.html %}
+  </div>
+  <script>
+    (function() {
+      function markWorkCardOrientations() {
+        document.querySelectorAll('.work-card img').forEach(function(img) {
+          var card = img.closest('.work-card');
+          if (!card) return;
+          function apply() {
+            if (img.naturalWidth && img.naturalHeight) {
+              if (img.naturalWidth > img.naturalHeight * 1.05) {
+                card.classList.add('is-landscape');
+              } else {
+                card.classList.remove('is-landscape');
+              }
+            }
+          }
+          if (img.complete) {
+            apply();
+          } else {
+            img.addEventListener('load', apply);
+          }
+        });
+      }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', markWorkCardOrientations);
+      } else {
+        markWorkCardOrientations();
+      }
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+.gallery { display: grid; gap: clamp(6rem, 14vh, 10rem) 0; grid-template-columns: 1fr; }
+
+.work-card { margin: 0 auto; min-width: 0; width: fit-content; max-width: min(100%, 1000px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 0; }
+.work-card a { background: transparent; display: block; max-width: 100%; text-decoration: none; overflow: hidden; }
+.work-card img { display: block; height: auto; width: auto; max-width: 100%; max-height: min(68vh, 700px); object-fit: contain; margin: 0 auto; transition: opacity 0.2s ease, transform 0.3s ease; }
+.work-card a:hover img { opacity: 0.94; transform: scale(1.005); }
+.work-card figcaption { display: grid; gap: .22rem; padding-top: .75rem; width: 100%; max-width: 100%; }
+.work-card figcaption strong { color: var(--quiet); font-size: .82rem; font-weight: 500; line-height: 1.25; }
+.work-card figcaption span { color: var(--quiet); font-size: .72rem; line-height: 1.4; }
+.work-video { width: min(100%, 1000px); }
+.video-embed { aspect-ratio: 16 / 9; width: 100%; }
+.video-embed iframe { border: 0; display: block; height: 100%; width: 100%; }
+
+.archive-gallery { padding: clamp(2rem, 4vw, 4rem) 0 clamp(4rem, 8vw, 7rem); }
+
+@media (max-width: 740px) {
+  .gallery { gap: clamp(9rem, 24vh, 16rem) 0; }
+  .work-card { width: 100%; padding: clamp(3.5rem, 9vh, 6.5rem) 0; }
+  .work-video { width: calc(100% + 2 * clamp(1.25rem, 4vw, 4.5rem)); max-width: none; margin-inline: calc(-1 * clamp(1.25rem, 4vw, 4.5rem)); }
+  .work-video .video-embed { aspect-ratio: 1 / 1; }
+  .work-card img { max-height: min(56vh, 460px); }
+  .work-card.is-landscape { padding-top: clamp(6rem, 16vh, 11rem); padding-bottom: clamp(6rem, 16vh, 11rem); }
+}
+
+@media (max-width: 420px) {
+  .work-video { width: calc(100% + 2rem); margin-inline: -1rem; }
+}

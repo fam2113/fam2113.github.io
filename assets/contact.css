@@ -1,0 +1,9 @@
+.contact-list { border-top: 1px solid var(--line); margin: 0; }
+.contact-list > div { align-items: start; border-bottom: 1px solid var(--line); display: grid; gap: 1rem; grid-template-columns: minmax(110px, .35fr) minmax(0, 1.65fr); padding: clamp(1.2rem, 2.3vw, 2rem) 0; }
+.contact-list dt { color: var(--quiet); font-size: .75rem; }
+.contact-list dd { font-size: clamp(0.95rem, 1.6vw, 1.2rem); letter-spacing: -.04em; margin: 0; }
+.contact-list a { text-underline-offset: 5px; }
+
+@media (max-width: 600px) {
+  .contact-list > div { grid-template-columns: 1fr; gap: .45rem; }
+}

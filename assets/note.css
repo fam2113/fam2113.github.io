@@ -1,0 +1,47 @@
+.note-stack { display: grid; gap: clamp(3rem, 6vw, 6rem); }
+.note-entry { border-top: 1px solid var(--line); padding-top: 1.1rem; }
+.note-entry header { display: grid; gap: .45rem; margin-bottom: 1.5rem; }
+.note-entry header span { color: var(--quiet); font-size: .72rem; }
+.note-entry h2 { font-size: clamp(1.8rem, 3vw, 3rem); }
+.note-entry blockquote { border-left: 2px solid var(--ink); font-size: clamp(1.1rem, 2vw, 1.5rem); letter-spacing: -.025em; line-height: 1.45; margin: 2rem 0; max-width: 38rem; padding-left: 1.25rem; }
+
+.note-document-header { display: grid; gap: .3rem; margin: 0 0 1.6rem; }
+.note-document-kicker,
+.note-document-alt-title,
+.note-document-meta,
+.note-document-credit { margin: 0; }
+.note-document-kicker { font-size: 1rem; line-height: 1.5; }
+.note-document-alt-title,
+.note-document-meta,
+.note-document-credit { color: var(--quiet); font-size: .78rem; line-height: 1.6; }
+.note-document-body { display: grid; gap: 1.05rem; }
+.note-document-body > p,
+.note-document-body > blockquote,
+.note-document-body > ul,
+.note-document-body > h3 { margin: 0; }
+.note-document-body > .note-document-subtitle:not(:first-child) {
+  background: rgb(17 17 17 / 3%);
+  margin-top: 2.2rem;
+  padding: .85rem .9rem .15rem;
+}
+.note-document-body > .note-document-subtitle:not(:first-child)::before {
+  border-top: 1px solid rgb(17 17 17 / 22%);
+  content: "";
+  display: block;
+  margin: 0 0 1rem;
+}
+.note-document-subtitle { font-size: clamp(1.15rem, 2vw, 1.5rem); font-weight: 400; letter-spacing: -.03em; line-height: 1.2; margin-top: 1.25rem; }
+.note-document-subtitle + .note-document-meta,
+.note-document-subtitle + .note-document-credit { margin-top: -.45rem; }
+.note-document-credit + .note-document-subtitle { margin-top: 2.6rem; }
+.note-document-quote { border-left: 2px solid var(--line); margin: 0; padding-left: 1rem; }
+.note-document-quote p { margin: 0; }
+.note-document-list { display: grid; gap: .9rem; margin: 0; padding-left: 1.2rem; }
+.note-document-list li { font-size: .94rem; line-height: 1.8; }
+.note-period-nav { margin: 0; }
+.note-archive { padding: clamp(1.5rem, 3vw, 2.5rem) 0 clamp(5rem, 10vw, 9rem); }
+.note-document-title { display: grid; font-size: clamp(1.5rem, 2.5vw, 2.2rem); gap: .45rem; letter-spacing: -.03em; line-height: 1.25; margin: 0 0 clamp(1.2rem, 2.5vw, 2rem); scroll-margin-top: 10rem; }
+.note-document-title:first-child { margin-top: 0; }
+@media (max-width: 600px) {
+  .note-document-title { scroll-margin-top: 11rem; }
+}

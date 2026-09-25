@@ -1,0 +1,39 @@
+.recent-section,
+.archive-index { padding: clamp(5rem, 10vw, 9rem) 0; }
+
+.archive-index { border-top: 1px solid var(--line); }
+
+.section-heading { align-items: end; display: grid; gap: .5rem 1rem; grid-template-columns: 1fr auto; margin-bottom: clamp(2rem, 4vw, 4rem); }
+.section-heading .eyebrow { grid-column: 1 / -1; }
+.section-heading--tight { margin-bottom: 2rem; }
+
+.text-link { color: var(--quiet); font-size: .8rem; text-decoration-thickness: 1px; text-underline-offset: 5px; }
+.text-link:hover { color: var(--ink); }
+
+.period-grid { border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.period-card {
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: .65rem;
+  min-height: 180px;
+  padding: 1.2rem 0;
+  position: relative;
+  text-decoration: none;
+}
+.period-card:nth-child(odd) { border-right: 1px solid var(--line); padding-right: clamp(1rem, 3vw, 3rem); }
+.period-card:nth-child(even) { padding-left: clamp(1rem, 3vw, 3rem); }
+.period-card span { color: var(--quiet); font-size: .72rem; }
+.period-card strong { align-self: end; font-size: clamp(1.4rem, 2.4vw, 2.2rem); font-weight: 400; letter-spacing: -.06em; line-height: .9; }
+.period-card b { font-size: 1.25rem; font-weight: 400; position: absolute; right: 1rem; top: 1rem; transition: transform 180ms ease; }
+.period-card:hover b { transform: translate(3px, -3px); }
+
+@media (max-width: 740px) {
+  .period-card { min-height: 145px; }
+}
+
+@media (max-width: 420px) {
+  .period-grid { grid-template-columns: 1fr; }
+  .period-card:nth-child(odd),
+  .period-card:nth-child(even) { border-right: 0; padding-left: 0; padding-right: 0; }
+  .period-card { min-height: 128px; }
+}

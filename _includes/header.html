@@ -1,0 +1,10 @@
+<header class="site-header">
+  <a class="wordmark" href="{{ '/index.html' | relative_url }}" aria-label="Lee, Hyunbae home">Lee, Hyunbae</a>
+  <nav class="site-nav" aria-label="Primary navigation">
+    <a {% if page.url contains '/works' %}aria-current="page"{% endif %} href="{{ '/works/2025-2026.html' | relative_url }}">Works</a>
+    <a {% if page.url contains '/exhibitions' %}aria-current="page"{% endif %} href="{{ '/exhibitions/2024.html' | relative_url }}">Exhibitions</a>
+    <a {% if page.url contains '/about' %}aria-current="page"{% endif %} href="{{ '/about.html' | relative_url }}">About</a>
+    <a {% if page.url contains '/note' %}aria-current="page"{% endif %} href="{{ '/note/2024.html' | relative_url }}">Note</a>
+    <a {% if page.url contains '/contact' %}aria-current="page"{% endif %} href="{{ '/contact.html' | relative_url }}">Contact</a>
+  </nav>
+</header>

@@ -1,0 +1,11 @@
+.exhibition-period-nav { border-top: 0; }
+.exhibition-year { border-top: 1px solid var(--line); padding: clamp(1.5rem, 3vw, 2.5rem) 0 0; scroll-margin-top: 7rem; }
+.exhibition-year + .exhibition-year { margin-top: clamp(2rem, 4vw, 4rem); }
+.exhibition-entry + .exhibition-entry { border-top: 1px solid var(--line); margin-top: clamp(4rem, 9vw, 8rem); padding-top: clamp(1rem, 2vw, 1.5rem); }
+.exhibition-entry > h3 { font-size: clamp(1.25rem, 2.5vw, 2.4rem); font-weight: 400; letter-spacing: -.045em; line-height: 1.05; margin: 0 0 clamp(2rem, 4vw, 4rem); max-width: 38rem; }
+.exhibition-gallery { padding: 0; }
+.exhibition-gallery figcaption { display: none !important; }
+
+@media (max-width: 600px) {
+  .exhibition-year { scroll-margin-top: 9rem; }
+}
