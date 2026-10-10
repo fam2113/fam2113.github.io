@@ -3,6 +3,21 @@
 .work-card { margin: 0 auto; min-width: 0; width: fit-content; max-width: min(100%, 1000px); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem 0; }
 .work-card a { background: transparent; display: block; max-width: 100%; text-decoration: none; overflow: hidden; }
 .work-card img { display: block; height: auto; width: auto; max-width: 100%; max-height: min(68vh, 700px); object-fit: contain; margin: 0 auto; transition: opacity 0.2s ease, transform 0.3s ease; }
+.work-card.x90 > a,
+.work-card.x90 > figcaption { width: 90%; }
+.work-card.x80 > a,
+.work-card.x80 > figcaption { width: 80%; }
+.work-card.x70 > a,
+.work-card.x70 > figcaption { width: 70%; }
+.work-card.x60 > a,
+.work-card.x60 > figcaption { width: 60%; }
+.work-card.x50 > a,
+.work-card.x50 > figcaption { width: 50%; }
+.work-card.x90 img,
+.work-card.x80 img,
+.work-card.x70 img,
+.work-card.x60 img,
+.work-card.x50 img { width: 100%; }
 .work-card a:hover img { opacity: 0.94; transform: scale(1.005); }
 .work-card figcaption { display: grid; gap: .22rem; padding-top: .75rem; width: 100%; max-width: 100%; }
 .work-card figcaption strong { color: var(--quiet); font-size: .82rem; font-weight: 500; line-height: 1.25; }
