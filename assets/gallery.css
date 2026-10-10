@@ -7,6 +7,17 @@
 .work-card figcaption { display: grid; gap: .22rem; padding-top: .75rem; width: 100%; max-width: 100%; }
 .work-card figcaption strong { color: var(--quiet); font-size: .82rem; font-weight: 500; line-height: 1.25; }
 .work-card figcaption span { color: var(--quiet); font-size: .72rem; line-height: 1.4; }
+.work-card--series { width: min(100%, 1000px); }
+.work-card--module { max-width: min(100%, 1280px); width: min(100%, 1280px); }
+.work-series { display: grid; max-width: 100%; width: 100%; }
+.work-series a { display: block; max-width: 100%; }
+.work-series img { height: auto; max-height: none; max-width: 100%; width: 100%; }
+.work-series--module { column-gap: 0; row-gap: clamp(.35rem, .7vw, .6rem); grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.work-series--pair { gap: clamp(.65rem, 1.4vw, 1.25rem); grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.work-series--module a { aspect-ratio: 25 / 9; }
+.work-series--pair a { aspect-ratio: 400 / 537; }
+.work-series--module img,
+.work-series--pair img { height: 100%; object-fit: cover; }
 .work-video { width: min(100%, 1000px); }
 .video-embed { aspect-ratio: 16 / 9; width: 100%; }
 .video-embed iframe { border: 0; display: block; height: 100%; width: 100%; }
