@@ -48,12 +48,13 @@ Work에 작품을 추가할 때는 이미지 업로드와 관련해 다음 절�
 
 Azure 업로드에는 connection string이 필요하며, 이는 항상 비밀 정보로 취급한다.
 
-- 자동화 환경에서는 `AZURE_STORAGE_CONNECTION_STRING` 같은 환경 변수를 우선 사용한다.
-  작가님이 직접 실행하는 컴퓨터에서는 macOS 키체인 또는 Windows 자격 증명 관리자를
-  사용해 connection string을 보관·읽는다. 다른 운영체제에서는 Git에서 제외되는 로컬
-  설정 파일만 사용한다.
-- 스크립트, HTML, 설정 파일, 문서, 명령 출력, 커밋, PR에 connection string을
-  하드코딩하지 않는다.
+- 자동화 환경에서는 `AZURE_STORAGE_CONNECTION_STRING` 환경 변수를 사용할 수 있다.
+  작가님이 직접 실행할 때는 저장소 루트의 `azure-connection-string.txt` 파일에
+  connection string을 한 줄로 저장한다. 이 파일은 `.gitignore`에 등록되어 있으며
+  어떤 운영체제에서도 동일하게 동작한다.
+- 스크립트, HTML, Git에 추적되는 설정 파일, 문서, 명령 출력, 커밋, PR에 connection
+  string을 하드코딩하지 않는다. 단, `.gitignore`에 등록된
+  `azure-connection-string.txt`의 한 줄 값은 예외다.
 - 비밀 값을 출력·echo·로그하지 않으며, 작가님에게 채팅에 전체 값을 붙여 넣으라고
   요청하지 않는다.
 - 비밀 값을 명령줄 인자로 넘기지 않는다. 운영체제의 보안 입력창 또는 입력이 보이지
