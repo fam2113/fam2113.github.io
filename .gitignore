@@ -1,1 +1,10 @@
 _site/*
+
+# Local secrets and Azure credentials — never commit these files.
+.env
+.env.*
+!.env.example
+*.secrets
+*.credentials
+azure-connection-string.txt
+local.settings.json
