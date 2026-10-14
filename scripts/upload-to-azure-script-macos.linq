@@ -15,7 +15,7 @@ using System.Collections.Concurrent;
 
 async Task Main()
 {
-    var sourcePath = "/Users/jkwchunjae/Documents/temp/project-leehyunbae";
+    var sourcePath = "/Users/jkwchunjae/Documents/temp/project-leehyunbae/works/small";
     var containerName = "leehyunbae"; // 사용할 Blob 컨테이너 이름으로 변경하세요.
 
     var connectionString = Util.GetPassword("Azure Storage 연결 문자열을 입력하세요");
@@ -27,7 +27,7 @@ async Task Main()
     
     $"업로드를 시작합니다. 파일 수: {files.Count:N0}".Dump();
     
-    const int maxDegreeOfParallelism = 8;
+    int maxDegreeOfParallelism = Environment.ProcessorCount;
     var startedAt = Stopwatch.StartNew();
     var uploading = new ConcurrentDictionary<string, DateTime>();
     var dashboardLock = new object();
@@ -146,6 +146,8 @@ async Task<long> UploadFileAsync(
     var blobName = GetBlobName(sourcePath, filePath);
     var fileInfo = new FileInfo(filePath);
     var blob = container.GetBlobClient(blobName);
+    
+    //(filePath, blobName).Dump();
 
     await using var stream = File.OpenRead(filePath);
     await blob.UploadAsync(
@@ -167,5 +169,5 @@ string GetBlobName(string sourcePath, string filePath)
     var relPath = Path.GetRelativePath(sourcePath, filePath);
     var dir = relPath.Split('/')[0];
     var name = relPath.Split('/')[1][3..].Trim();
-    return $"works/large/{dir}/{name}";
+    return $"works/small/{dir}/{name}";
 }
