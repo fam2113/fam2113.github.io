@@ -1,0 +1,4 @@
+interface:
+  display_name: "Work 이미지 업로드"
+  short_description: "작품 이미지를 축소해 Azure에 안전하게 업로드"
+  default_prompt: "$work-image-upload으로 첨부한 Work 작품 이미지를 업로드해 주세요."
