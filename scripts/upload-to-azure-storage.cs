@@ -7,7 +7,12 @@ using Azure;
 using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using SkiaSharp;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 return await UploadProgram.RunAsync(args);
@@ -15,7 +20,6 @@ return await UploadProgram.RunAsync(args);
 internal static class UploadProgram
 {
     private const string ContainerName = "leehyunbae";
-    private const string ConnectionStringEnvironmentVariable = "AZURE_STORAGE_CONNECTION_STRING";
     private const int DefaultTargetBytes = 400 * 1024;
     private const int InitialLongestEdge = 2_560;
     private const int MinimumLongestEdge = 320;
@@ -26,6 +30,22 @@ internal static class UploadProgram
     {
         try
         {
+            if (args is ["--setup-azure-connection"])
+            {
+                AzureConnectionStringStore.ReplaceFromPrompt();
+                Console.WriteLine("Azure 연결 문자열을 이 컴퓨터의 보안 저장소에 저장했습니다.");
+                return 0;
+            }
+
+            if (args is ["--forget-azure-connection"])
+            {
+                var deleted = AzureConnectionStringStore.Delete();
+                Console.WriteLine(deleted
+                    ? "이 컴퓨터에 저장된 Azure 연결 문자열을 삭제했습니다."
+                    : "이 컴퓨터에 저장된 Azure 연결 문자열이 없습니다.");
+                return 0;
+            }
+
             var options = ParseArguments(args);
             if (options is null)
             {
@@ -65,13 +85,7 @@ internal static class UploadProgram
                 return 0;
             }
 
-            var connectionString = Environment.GetEnvironmentVariable(ConnectionStringEnvironmentVariable);
-            if (string.IsNullOrWhiteSpace(connectionString))
-            {
-                throw new InvalidOperationException(
-                    $"환경 변수 {ConnectionStringEnvironmentVariable}이 설정되어 있지 않습니다. " +
-                    "연결 문자열을 코드나 채팅에 넣지 말고 로컬 환경 변수로 설정하세요.");
-            }
+            var connectionString = AzureConnectionStringStore.GetOrCreate();
 
             var container = await GetContainerAsync(connectionString, cancellationSource.Token);
             var uploadConditions = options.Overwrite
@@ -330,9 +344,12 @@ internal static class UploadProgram
   --target-kb <KB>      축소 이미지 목표 용량 (기본값: 400)
   --overwrite           같은 Blob 이름의 기존 파일을 교체
   --dry-run             축소 이미지만 만들고 Azure에는 업로드하지 않음
+  --setup-azure-connection   Azure 연결 문자열을 이 컴퓨터의 보안 저장소에 새로 저장
+  --forget-azure-connection  이 컴퓨터에 저장된 Azure 연결 문자열 삭제
   --help, -h            이 도움말 표시
 
-실행 전에는 AZURE_STORAGE_CONNECTION_STRING 환경 변수를 로컬에 설정하세요.
+연결 문자열은 환경 변수 AZURE_STORAGE_CONNECTION_STRING 또는 이 컴퓨터의 보안 저장소에서 읽습니다.
+환경 변수가 없고 보안 저장소에 값도 없으면 첫 실제 업로드 시 한 번만 안전하게 입력받습니다.
 """);
     }
 
@@ -344,4 +361,322 @@ internal static class UploadProgram
         int TargetBytes);
 
     private sealed record Thumbnail(byte[] Bytes, int Width, int Height, int Quality);
+}
+
+internal static class AzureConnectionStringStore
+{
+    private const string EnvironmentVariableName = "AZURE_STORAGE_CONNECTION_STRING";
+    private const string TargetName = "LeeHyunbae.AzureStorage.ConnectionString";
+    private const string UserName = "Azure Storage";
+    private const uint CredentialTypeGeneric = 1;
+    private const uint CredentialPersistLocalMachine = 2;
+    private const int ErrorNotFound = 1_168;
+
+    public static string GetOrCreate()
+    {
+        var environmentValue = Environment.GetEnvironmentVariable(EnvironmentVariableName);
+        if (!string.IsNullOrWhiteSpace(environmentValue))
+        {
+            return environmentValue;
+        }
+
+        var storedValue = Read();
+        if (!string.IsNullOrWhiteSpace(storedValue))
+        {
+            return storedValue;
+        }
+
+        Console.WriteLine("이 컴퓨터에 Azure 연결 문자열이 아직 저장되어 있지 않습니다.");
+        ReplaceFromPrompt();
+
+        return Read() ?? throw new InvalidOperationException(
+            "Azure 연결 문자열을 보안 저장소에서 다시 읽지 못했습니다.");
+    }
+
+    public static void ReplaceFromPrompt()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            SaveToMacKeychainFromPrompt();
+            return;
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            var connectionString = ReadSecretFromConsole();
+            try
+            {
+                SaveToWindowsCredentialManager(connectionString);
+            }
+            finally
+            {
+                connectionString = string.Empty;
+            }
+
+            return;
+        }
+
+        throw new PlatformNotSupportedException(
+            "자동 보안 저장소는 macOS와 Windows에서만 지원합니다. " +
+            $"이 환경에서는 {EnvironmentVariableName} 환경 변수를 사용하세요.");
+    }
+
+    public static bool Delete()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            return DeleteFromMacKeychain();
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            return DeleteFromWindowsCredentialManager();
+        }
+
+        throw new PlatformNotSupportedException(
+            "자동 보안 저장소는 macOS와 Windows에서만 지원합니다.");
+    }
+
+    private static string? Read()
+    {
+        if (OperatingSystem.IsMacOS())
+        {
+            return ReadFromMacKeychain();
+        }
+
+        if (OperatingSystem.IsWindows())
+        {
+            return ReadFromWindowsCredentialManager();
+        }
+
+        return null;
+    }
+
+    private static string ReadSecretFromConsole()
+    {
+        if (Console.IsInputRedirected)
+        {
+            throw new InvalidOperationException(
+                "연결 문자열을 처음 저장하려면 터미널에서 이 명령을 실행하세요.");
+        }
+
+        Console.Write("Azure Storage 연결 문자열을 입력하세요 (입력 내용은 표시되지 않습니다): ");
+        var value = new StringBuilder();
+
+        while (true)
+        {
+            var key = Console.ReadKey(intercept: true);
+            if (key.Key == ConsoleKey.Enter)
+            {
+                Console.WriteLine();
+                break;
+            }
+
+            if (key.Key == ConsoleKey.Backspace)
+            {
+                if (value.Length > 0)
+                {
+                    value.Length--;
+                }
+
+                continue;
+            }
+
+            if (!char.IsControl(key.KeyChar))
+            {
+                value.Append(key.KeyChar);
+            }
+        }
+
+        if (value.Length == 0)
+        {
+            throw new InvalidOperationException("빈 연결 문자열은 저장할 수 없습니다.");
+        }
+
+        return value.ToString();
+    }
+
+    private static string? ReadFromMacKeychain()
+    {
+        using var process = StartMacSecurityProcess(
+            redirectOutput: true,
+            "find-generic-password", "-w", "-s", TargetName, "-a", UserName);
+        var output = process.StandardOutput.ReadToEnd();
+        _ = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+
+        return process.ExitCode == 0
+            ? output.TrimEnd('\r', '\n')
+            : null;
+    }
+
+    private static void SaveToMacKeychainFromPrompt()
+    {
+        Console.WriteLine("macOS 키체인이 연결 문자열을 한 번만 안전하게 요청합니다.");
+        using var process = StartMacSecurityProcess(
+            redirectOutput: false,
+            "add-generic-password", "-U", "-a", UserName, "-s", TargetName, "-w");
+        process.WaitForExit();
+
+        if (process.ExitCode != 0)
+        {
+            throw new InvalidOperationException("macOS 키체인에 연결 문자열을 저장하지 못했습니다.");
+        }
+    }
+
+    private static bool DeleteFromMacKeychain()
+    {
+        using var process = StartMacSecurityProcess(
+            redirectOutput: true,
+            "delete-generic-password", "-s", TargetName, "-a", UserName);
+        _ = process.StandardOutput.ReadToEnd();
+        _ = process.StandardError.ReadToEnd();
+        process.WaitForExit();
+        return process.ExitCode == 0;
+    }
+
+    private static Process StartMacSecurityProcess(bool redirectOutput, params string[] arguments)
+    {
+        var startInfo = new ProcessStartInfo("/usr/bin/security")
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = redirectOutput,
+            RedirectStandardError = redirectOutput
+        };
+
+        foreach (var argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
+        return Process.Start(startInfo)
+            ?? throw new InvalidOperationException("macOS 키체인 도구를 시작하지 못했습니다.");
+    }
+
+    private static string? ReadFromWindowsCredentialManager()
+    {
+        if (!CredRead(TargetName, CredentialTypeGeneric, 0, out var credentialPointer))
+        {
+            var error = Marshal.GetLastWin32Error();
+            if (error == ErrorNotFound)
+            {
+                return null;
+            }
+
+            throw new Win32Exception(error, "Windows 자격 증명 관리자를 읽지 못했습니다.");
+        }
+
+        try
+        {
+            var credential = Marshal.PtrToStructure<Credential>(credentialPointer);
+            if (credential.CredentialBlob == IntPtr.Zero || credential.CredentialBlobSize == 0)
+            {
+                return null;
+            }
+
+            var bytes = new byte[credential.CredentialBlobSize];
+            Marshal.Copy(credential.CredentialBlob, bytes, 0, bytes.Length);
+            try
+            {
+                return Encoding.Unicode.GetString(bytes);
+            }
+            finally
+            {
+                CryptographicOperations.ZeroMemory(bytes);
+            }
+        }
+        finally
+        {
+            CredFree(credentialPointer);
+        }
+    }
+
+    private static void SaveToWindowsCredentialManager(string connectionString)
+    {
+        var bytes = Encoding.Unicode.GetBytes(connectionString);
+        var credentialBlob = IntPtr.Zero;
+
+        try
+        {
+            credentialBlob = Marshal.AllocHGlobal(bytes.Length);
+            Marshal.Copy(bytes, 0, credentialBlob, bytes.Length);
+            var credential = new Credential
+            {
+                Type = CredentialTypeGeneric,
+                TargetName = TargetName,
+                CredentialBlobSize = checked((uint)bytes.Length),
+                CredentialBlob = credentialBlob,
+                Persist = CredentialPersistLocalMachine,
+                UserName = UserName
+            };
+
+            if (!CredWrite(ref credential, 0))
+            {
+                throw new Win32Exception(
+                    Marshal.GetLastWin32Error(),
+                    "Windows 자격 증명 관리자에 연결 문자열을 저장하지 못했습니다.");
+            }
+        }
+        finally
+        {
+            CryptographicOperations.ZeroMemory(bytes);
+            if (credentialBlob != IntPtr.Zero)
+            {
+                Marshal.Copy(new byte[bytes.Length], 0, credentialBlob, bytes.Length);
+                Marshal.FreeHGlobal(credentialBlob);
+            }
+        }
+    }
+
+    private static bool DeleteFromWindowsCredentialManager()
+    {
+        if (CredDelete(TargetName, CredentialTypeGeneric, 0))
+        {
+            return true;
+        }
+
+        var error = Marshal.GetLastWin32Error();
+        if (error == ErrorNotFound)
+        {
+            return false;
+        }
+
+        throw new Win32Exception(error, "Windows 자격 증명 관리자에서 연결 문자열을 삭제하지 못했습니다.");
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    private struct Credential
+    {
+        public uint Flags;
+        public uint Type;
+        public string TargetName;
+        public string Comment;
+        public System.Runtime.InteropServices.ComTypes.FILETIME LastWritten;
+        public uint CredentialBlobSize;
+        public IntPtr CredentialBlob;
+        public uint Persist;
+        public uint AttributeCount;
+        public IntPtr Attributes;
+        public string TargetAlias;
+        public string UserName;
+    }
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CredRead(
+        string target,
+        uint type,
+        uint flags,
+        out IntPtr credential);
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CredWrite(ref Credential credential, uint flags);
+
+    [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool CredDelete(string target, uint type, uint flags);
+
+    [DllImport("advapi32.dll")]
+    private static extern void CredFree(IntPtr credential);
 }
