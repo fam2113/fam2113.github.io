@@ -54,6 +54,8 @@
 .work-video { width: min(100%, 1000px); }
 .video-embed { aspect-ratio: 16 / 9; width: 100%; }
 .video-embed iframe { border: 0; display: block; height: 100%; width: 100%; }
+.work-instagram--reel { max-width: min(100%, 420px); width: min(100%, 420px); }
+.work-instagram--reel .instagram-media { margin: 0 !important; max-width: 100% !important; min-width: 0 !important; width: 100% !important; }
 
 .archive-gallery { padding: clamp(2rem, 4vw, 4rem) 0 clamp(4rem, 8vw, 7rem); }
 .archive-gallery--2023-2024 { gap: clamp(4rem, 8vh, 6rem) 0; }
@@ -64,6 +66,7 @@
   .work-card { width: 100%; padding: clamp(3.5rem, 9vh, 6.5rem) 0; }
   .work-video { width: calc(100% + 2 * clamp(1.25rem, 4vw, 4.5rem)); max-width: none; margin-inline: calc(-1 * clamp(1.25rem, 4vw, 4.5rem)); }
   .work-video .video-embed { aspect-ratio: 1 / 1; }
+  .work-instagram--reel { max-width: min(100%, 420px); margin-inline: auto; width: min(100%, 420px); }
   .work-card img { max-height: min(56vh, 460px); }
   .work-card.is-landscape { padding-top: clamp(6rem, 16vh, 11rem); padding-bottom: clamp(6rem, 16vh, 11rem); }
 }
