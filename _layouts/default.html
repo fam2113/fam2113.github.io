@@ -20,7 +20,7 @@
         {% include period_nav.html %}
       {% elsif page.exhibition_year %}
         {% include exhibition_period_nav.html %}
-      {% elsif page.note_year %}
+      {% elsif page.note_year or page.note_index %}
         {% include note_period_nav.html %}
       {% endif %}
     </div>
